@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字母消消乐</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ece9e6, #ffffff);
+            padding: 20px;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-around;
+            width: 80%;
+            margin-bottom: 20px;
+        }
+
+        .info-panel div {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .info-panel div:hover {
+            transform: scale(1.05);
+        }
+
+        .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 1200px;
+    gap: 60px; 
+}
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(6, 60px);
+            grid-template-rows: repeat(10, 60px);
+            gap: 5px;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            line-height: 60px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .cell1 { background-color: #4CAF50; }
+        .cell2 { background-color: #eff308; }
+        .cell3 { background-color: #1035ef; }
+        .cell4 { background-color: #f00b0b; }
+
+        .cell:hover {
+            transform: scale(1.05);
+        }
+
+        .cell.empty {
+            background-color: #ffffff;
+            box-shadow: none;
+        }
+
+        .rank-panel {
+            width: 400px;
+            padding: 20px;
+            background-color: #ffeb3b;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-top: 20px; /* 调整顶部间距 */
+        }
+
+        .rank-panel h3 {
+            margin: 0 0 10px;
+            text-align: center;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .rank-panel ul {
+            list-style: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .rank-panel li {
+            background-color: #ffca28;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .rank-panel li:nth-child(odd) {
+            background-color: #fff176;
+        }
+
+        .game-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .game-rules {
+            width: 400px;
+            margin-top: 10px;
+
+            font-size: 18px;
+            color: #555;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .action-button1 { background-color: #4CAF50; }
+        .action-button2 { background-color: #eff308; }
+        .action-button3 { background-color: #1035ef; }
+        .action-button4 { background-color: #f00b0b; }
+
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="info-panel">
+    <div>点击次数: <span id="clicks">0</span></div>
+    <div>分数: <span id="score">0</span></div>
+</div>
+
+<div class="container">
+    <div class="board" id="board"></div>
+    <div>
+        <div class="game-title">游戏规则</div>
+        <div class="game-rules">
+            游戏板由 10 行 6 列字母构成，字母仅限于 'A'、'T'、'C' 和 'G'。
+            玩家可通过点击下方按钮消除最后一行中的相同字母，
+            字母消除后上方字母会掉落下来。每消除一个字母获得 10 分，
+            同时记录点击次数。当所有格子清空时，游戏结束。
+        </div>
+        <div class="rank-panel">
+            <h3>最短点击次数排行榜</h3>
+            <ul id="rank-list"></ul>
+        </div>
+        <div class="button-container"></div>
+            <button class="action-button action-button1" data-letter="A">A</button>
+            <button class="action-button action-button3" data-letter="T">T</button>
+            <button class="action-button action-button4" data-letter="C">C</button>
+            <button class="action-button action-button2" data-letter="G">G</button>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const rows = 10;  // 实际行数
+    const visibleRows = 10;  // 可见行数
+    const cols = 6;  // 列数
+    const board = document.getElementById("board");
+    const clickDisplay = document.getElementById("clicks");
+    const scoreDisplay = document.getElementById("score");
+    const rankList = document.getElementById("rank-list");
+    let clickCount = 0;
+    let score = 0;
+    var str = "";
+    const fixedGrid = [
+        "CAGAAC",
+        "GAGGGT",
+        "GGAGGC",
+        "TCCCCG",
+        "GTTTGG",
+        "AATGGA",
+        "TTCCTA",
+        "AGCTAC",
+        "CCCGTG",
+        "CCAGCG"
+    ];
+
+    // 初始化游戏板
+    let grid = [];
+    function initBoard() {
+        for (let r = 0; r < rows; r++) {
+            let row = fixedGrid[r].split('');  // 通过固定的字母序列生成每行字母
+            grid.push(row);
+        }
+        renderBoard();
+    }
+
+    // 渲染底部可见的10行
+    function renderBoard() {
+        board.innerHTML = '';
+        const startRow = rows - visibleRows;
+        for (let r = startRow; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell'); 
+                switch(grid[r][c]){
+                    case 'A': cell.classList.add('cell1'); break;
+                case 'G': cell.classList.add('cell2'); break;
+                case 'T': cell.classList.add('cell3'); break;
+                case 'C': cell.classList.add('cell4'); break;
+                }
+                
+                if (grid[r][c] === null) {
+                    cell.classList.add('empty');
+                } else {
+                    cell.textContent = grid[r][c];
+                }
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                board.appendChild(cell);
+            }
+        }
+    }
+    function isBoardEmpty() {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] !== null) {
+                return false;  // 发现非空格子，返回 false
+            }
+        }
+    }
+    return true;  // 所有格子都为空，返回 true
+    }
+    // 更新点击次数
+    function updateClickCount() {
+        clickCount++;  // 每次点击增加1
+        clickDisplay.textContent = clickCount;
+    }
+
+    // 更新分数
+    function updateScore(matchCount) {
+        score += matchCount * 10;  // 每个匹配字母加10分
+        scoreDisplay.textContent = score;
+    }
+
+    // 让字母下落，填充空位
+    function dropLetters() {
+        for (let c = 0; c < cols; c++) {
+            for (let r = rows - 1; r >= 0; r--) {
+                if (grid[r][c] === null) {
+                    // 从上面找非空的字母下落
+                    for (let k = r - 1; k >= 0; k--) {
+                        if (grid[k][c] !== null) {
+                            grid[r][c] = grid[k][c];
+                            grid[k][c] = null;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        renderBoard();
+    }
+  
+function saveClickCountToLeaderboard(clicks, str) {
+    // 发送排行榜到后端
+    axios.get('/save-leaderboard', {
+        params: {
+            clicks: clicks,
+            str: str
+        }
+    })
+    .then(response => {
+        console.log(response.data);
+        loadLeaderboard();  // 调用加载排行榜的函数
+    })
+    .catch(err => console.error('保存排行榜失败:', err));
+}
+
+
+// 从后端加载排行榜
+function loadLeaderboard() {
+    fetch('/leaderboard')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络错误: ' + response.status);
+            }
+
+                return response.json().catch(() => []);
+        })
+        .then(data => {
+            rankList.innerHTML = '';
+            data.forEach((entry, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `第 ${index + 1} 名: ${entry.clicks} 次, 顺序: ${entry.str}`;
+                rankList.appendChild(listItem);
+            });
+        })
+        .catch(err => console.error('加载排行榜失败:', err));
+}
+
+
+// 在游戏结束时加载排行榜
+function gameEnd() {
+    saveClickCountToLeaderboard(clickCount, str);
+    loadLeaderboard(); // 加载排行榜
+}
+
+    initBoard();
+    loadLeaderboard();
+    document.querySelectorAll('.action-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const letter = e.target.dataset.letter;
+            removeLetters(letter);
+        });
+    });
+
+    // 根据字母移除最后一行相应的字母
+    function removeLetters(letter) {
+        const row = rows - 1; // 最后一行
+        let toRemove = [];
+        for (let c = 0; c < cols; c++) {
+            if (grid[row][c] === letter) {
+                toRemove.push([row, c]);
+            }
+        }
+
+        if (toRemove.length > 0) {
+            toRemove.forEach(([r, c]) => {
+                grid[r][c] = null; // 将字母设置为空
+            });
+            updateClickCount(); // 更新点击次数
+            str += letter;
+            updateScore(toRemove.length); // 更新分数
+            dropLetters(); // 让上面的字母掉下来
+        }
+        if (isBoardEmpty()) {
+            alert("恭喜！所有格子都被清空了！");
+            gameEnd(); // 结束游戏并保存点击次数
+        }
+    }
+
+    </script>
+
+</body>
+</html>
